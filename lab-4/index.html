@@ -1,71 +1,143 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 	<title>Color Game - Multimedia Programming 2563 ITKMITL</title>
 	<link rel="stylesheet" type="text/css" href="../src/reset.css">
 	<link rel="stylesheet" type="text/css" href="lab.css">
 	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 </head>
+
 <body>
 	<div id="canvas">
 		<section id="canvas_header">
 			<div>
-				เหลือเวลา 10 วินาที
+				<div style="background-color: brown; width: 500px;">
+					<div :style="{
+					'width' : level_progress+'%',
+					'background-color': '#fff',
+					}">_</div>
+
+				</div>
+
+				Your level : {{level}} <br><br>
+
+				<div style="background-color:greenyellow; width: 500px;">
+					<div :style="{
+									'width' : time+'%',
+									'background-color': '#fff',
+									}">.</div>
+
+				</div>
+				Your time {{time}} s
+				<br>
+				<br>
+				<br><br><br>
 			</div>
 		</section>
 		<section id="canvas_main">
 			<main>
-				<a-dot></a-dot>
-				<a-dot></a-dot>
-				<a-dot></a-dot>
-				<a-dot></a-dot>
-				<a-dot></a-dot>
-				<a-dot style="--l:80%"></a-dot>
-				<a-dot data-pick="true"></a-dot>
-				<a-dot></a-dot>
-				<a-dot></a-dot>
+				<a-dot v-for="i in row*row" :style="{
+					'--row' : row,
+					'--h': h,
+					'--l': l+'%',
+					}" :data-pick="i == pick" @click="check(i)"></a-dot>
+
 			</main>
 		</section>
 		<section id="canvas_footer">
 			<div>
-				0 คะแนน
+				score {{score}}
 			</div>
 		</section>
 	</div>
 
 	<script>
 		let picklight = "20%" //เลือกว่ารอบนี้ อันพิเศษจะมีความสว่าง 20%
-		document.registerElement('a-dot') //ให้ vue รู้จัก a-dot
-
-		function rand(start,stop){//สร้างฟังก์ชัน random ไว้ใช้
-			let shift = (stop-start)+1
-			return Math.floor(Math.random()*100%shift)+start
+		function rand(start, stop) {//สร้างฟังก์ชัน random ไว้ใช้
+			let shift = (stop - start) + 1
+			return Math.floor(Math.random() * 100 % shift) + start
 		}
 
 		let app = new Vue({
-			el:'#canvas',
-			data:{
-				row:2, //จำนวนแถวที่จะมีในรอบนี้
-				h:330, // hue ในรอบนี้
-				time:10, //เวลาเริ่มต้น
-				score:0, //คะแนนเริ่มต้น
-				pick:1, //หมายเลขวงกลมที่จะสีแตกต่างจากก้อนอื่นๆ
-				l:30,//ความสว่างของสีทั่วไปในรอบนี้
+			el: '#canvas',
+			data: {
+				row: 3, //จำนวนแถวที่จะมีในรอบนี้
+				h: 330, // hue ในรอบนี้
+				time: 3, //เวลาเริ่มต้น
+				score: 0, //คะแนนเริ่มต้น
+				pick: 1, //หมายเลขวงกลมที่จะสีแตกต่างจากก้อนอื่นๆ
+				l: 30,//ความสว่างของสีทั่วไปในรอบนี้
+				before_l: 0, //ความสว่างของสีทั่วไปรอบก่อนหน้า
+				level: 0,
+				level_progress: 0
 			},
 			methods: {
+				check: function (i) {
+					if (i == this.pick) {
+						app.nextround();
+					}
+					else {
+						this.time -= 1
+					}
+				},
+				nextround: function () {
+					this.score++
+					if (this.score <= 10) { //ผ่าน 0 ด่าน
+						this.level = 0 //level 0
+						this.level_progress += 10 //level 0
+						this.time += 3 //เวลาในแต่ละด่าน
+						this.row = rand(2, 4) //สุ่ม row
+						this.pick = rand(1, this.row * this.row) //สุ่ม pick
+						this.h = rand(0, 356) //สุ่ม สี
+						this.l = rand(40, 100) //สุ่ม ความสว่าง
+					}
+					else if (this.score <= 30 && this.score > 11) { //ผ่าน 10 ด่าน lv:1
+						this.level = 1 //level 1
+						this.level_progress += 5 //level 0
+						this.time += 2//เวลาในแต่ละด่าน
+						this.row = rand(3, 6) //สุ่ม row
+						this.pick = rand(1, this.row * this.row) //สุ่ม pick
+						this.h = rand(100, 356) //สุ่ม สี
+						this.l = rand(25, 60) //สุ่ม ความสว่าง
+					}
+					else if (this.score <= 60 && this.score > 31) { //ผ่าน 30 ด่าน lv:2
+						this.level = 2 //level 2
+						this.level_progress += 5 //level 0
+						this.time += 1 //เวลาในแต่ละด่าน
+						this.row = rand(4, 7) //สุ่ม row
+						this.pick = rand(1, this.row * this.row) //สุ่ม pick
+						this.h = rand(200, 356) //สุ่ม สี
+						this.l = rand(22, 30) //สุ่ม ความสว่าง
+					}
+					else if (this.score > 60) { //ชนะ
+						alert('YOU WIN');
+						this.score = 0;
+					}
+					else { //reset level_progress
+						this.level_progress = 0;
+					}
 
-			}
+				}
+			},
+
+
 		})
 		//ทำให้แคนวาสมี --picklight ตามที่กำหนดไว้ข้างบนนี้
-		document.querySelector('#canvas').style.setProperty('--picklight',picklight);
-		
-		let counter = setInterval(()=>{
-			if (app.time>0) {
+		document.querySelector('#canvas').style.setProperty('--picklight', picklight);
+
+		let counter = setInterval(() => {
+			if (app.time > 0) {
 				app.time--
-			}else{
+			}
+			else if (app.time <= 0) {
+				alert('GAME OVER');
+				this.score = 3;
+			} else {
 				clearInterval(counter)
 			}
-		},1000);
+		}, 1000);
 	</script>
 </body>
+
 </html>
