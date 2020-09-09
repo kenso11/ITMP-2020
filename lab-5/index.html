@@ -1,36 +1,36 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 	<title>Lab - Multimedia Programming 2563 ITKMITL</title>
 	<link rel="stylesheet" type="text/css" href="../src/reset.css">
 	<link rel="stylesheet" type="text/css" href="lab.css">
 	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 </head>
+
 <body>
 	<div id="canvas">
 		<section id="canvas_header">
 			<div>
-				-- แสดงคะแนน
+				คุณแยกผลไม้ได้ {{score}} ชิ้น
 			</div>
 		</section>
-		<section id="canvas_main" 
-		:data-play="play">
+		<section id="canvas_main" :data-play="play">
 			<main>
-				<div class="box _path" 
-				v-for="i in 14" 
-				:data-pst="i"></div>
-				<div class="box _toggle" data-pst="10" data-isrightarrow="1"></div>
+				<div class="box _path" v-for="f in 14" :data-pst="f"></div>
+				<div class="box _toggle" data-pst="10" :data-isrightarrow="isRightArrow"></div>
 
-				<div class="box _fruit"></div>
+				<div class="box _fruit" v-for="f in fruits" :data-pst="f.pst" :data-type="f.type">
+				</div>
 
 				<div class="box _origin"></div>
 				<div class="box _12" data-pst="12"></div>
 				<div class="box _16" data-pst="16"></div>
-				
+
 			</main>
 		</section>
 		<section id="canvas_footer">
-			<div v-if="play" class="btn" id="toggle">
+			<div v-if="play" class="btn" id="toggle" @click="change()">
 				Toggle
 			</div>
 			<div v-if="!play" class="btn" id="endgame">
@@ -40,28 +40,86 @@
 	</div>
 
 	<script>
-		function rand(start,stop){
-			let shift = (stop-start)+1
-			return Math.floor(Math.random()*100%shift)+start
+		function rand(start, stop) {
+			let shift = (stop - start) + 1
+			return Math.floor(Math.random() * 100 % shift) + start
 		}
-		
-		let fruitCount = 5
+
+		let nextFruitID = 3
 		let isRightArrow = 1
 		let speed = 1000
 		let app = new Vue({
-			el:'#canvas',
-			data:{
-				play:true,
-				time:0,
-				score:0,
-				fruits:[
-					{id:1,type:13,pst:6,run:true,step:1},
-					{id:2,type:11,pst:3,run:true,step:1},
-					{id:3,type:11,pst:2,run:true,step:1},
-					{id:4,type:13,pst:1,run:true,step:1},
+			el: '#canvas',
+			data: {
+				isRightArrow: isRightArrow,
+				speed: speed,
+				play: true,
+				turn: 0,
+				score: 0,
+				fruits: [
+					{ id: 1, type: 13, pst: 6, run: true, step: 1 },
+					{ id: 2, type: 11, pst: 3, run: true, step: 1 },
 				]
+			},
+			methods: {
+				change: function () {
+					if (this.isRightArrow == 1) {
+						this.isRightArrow = 0
+					} else {
+						this.isRightArrow = 1
+					}
+					console.log(this.isRightArrow)
+				},
+			},
+			computed: {},
+			watch: {
+				turn: function (x) {
+					for (let f in this.fruits) {
+						let run = this.fruits[f].run
+						if (run) {
+							this.fruits[f].pst = this.fruits[f].pst + this.fruits[f].step
+						}
+						if (this.fruits[f].pst == 12 || this.fruits[f].pst == 16) {
+							this.fruits[f].run = false
+
+						}
+						if (this.fruits[f].pst == 10) {
+							if (this.isRightArrow == 1) {
+								this.fruits[f].step = 3
+							} else {
+								this.fruits[f].step = 1
+							}
+						}
+						if (this.fruits[f].pst == 11 || this.fruits[f].pst == 13) {
+							if (this.fruits[f].pst == this.fruits[f].type && this.fruits[f].run) {
+								this.score++
+							}
+							else if (this.fruits[f].pst != this.fruits[f].type && this.fruits[f].run) {
+								this.play = false
+								break
+							}
+						}
+					}
+					let spawn = rand(0, 1)
+					if (spawn == 1) {
+						newfruit = rand(0, 1)
+						newfruitId = 3
+						if (newfruit == 1) {
+							this.fruits.push({ id: newfruitId, type: 11, pst: 1, run: true, step: 1 })
+						} else {
+							this.fruits.push({ id: newfruitId, type: 13, pst: 1, run: true, step: 1 })
+						}
+						newfruitId++;
+					}
+
+					//console.log(x)
+				}
 			}
 		})
+		let = playing = setInterval(function () {
+			app.turn++
+		}, speed)
 	</script>
 </body>
+
 </html>
